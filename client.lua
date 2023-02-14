@@ -1,8 +1,8 @@
-local inElevator = nil
 local zones = {}
+local location = {}
 
 --Functions
-local function teleportPlayer(index, coords)
+local function teleportPlayer(coords)
     lib.hideContext()
     if lib.progressCircle({
         duration = 4000,
@@ -21,39 +21,37 @@ local function teleportPlayer(index, coords)
         },
     }) 
     then
-        SetEntityCoords(cache.ped, coords[index], 1, 0, 0, 0) 
+        SetEntityCoords(cache.ped, coords, 1, 0, 0, 0) 
     else 
         lib.notify({title = 'Cancelled', type = 'error'})
     end   
 end
 
 for name, _ in pairs(Config.Locations) do 
-    for _, coords in pairs(Config.Locations[name]) do 
+    for _, v in pairs(Config.Locations[name]) do 
         zones = lib.zones.box({
-            coords = coords,
+            coords = v.coords,
             size = vec3(3, 3, 2),
             rotation = 0.0,
             inside  = function()
-                inElevator = true
                 lib.showTextUI('Elevator')
                 if IsControlJustReleased(0, 38) then
                     local options = {}
 
-                    for i=1, #Config.Locations[name] do
+                    for k, v in pairs(Config.Locations[name]) do
                         options[#options+1] = {
-                            title = 'Floor '..i,
+                            title = v.name,
                             onSelect = function()
-                                teleportPlayer(i, Config.Locations[name])
+                                teleportPlayer(Config.Locations[name][k].coords)
                             end,
                         }
                     end
-                    lib.registerContext({id = 'ELEVATOR', title = 'Hospital Elevator', options = options})
+                    lib.registerContext({id = 'ELEVATOR', title = 'Elevator', options = options})
                     lib.showContext('ELEVATOR')   
                 end
             end,
             onExit = function()
                 lib.hideTextUI()
-                inElevator = false
             end
         })
     end
